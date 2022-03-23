@@ -66,11 +66,63 @@ resource "azurerm_mysql_server" "group4-sql" {
   #ssl_minimal_tls_version_enforced  = "TLS1_2"
 }
 
-
+# Azure Database
 resource "azurerm_mysql_database" "group4-db" {
   name                = "group4-mysqldb"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   server_name         = azurerm_mysql_server.group4-sql.name
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
+}
+
+# Auto Scale
+resource "azurerm_monitor_autoscale_setting" "group4-autoscale" {
+  name                = "group4-autoscaleSetting"
+  resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
+  location            = azurerm_resource_group.RG_Group4_week3_20220321.location
+  target_resource_id  = azurerm_app_service_plan.group4-plan.id
+  profile {
+    name = "default"
+    capacity {
+      default = 2
+      minimum = 1
+      maximum = 10
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_app_service_plan.group4-plan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 90
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT5M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_app_service_plan.group4-plan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 10
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT5M"
+      }
+    }
+  }  
 }
