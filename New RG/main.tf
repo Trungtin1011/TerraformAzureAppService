@@ -12,8 +12,8 @@ resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
 }
 
 # App Service Plan
-resource "azurerm_app_service_plan" "group4-plan" {
-  name                = "group4-apps-plan"
+resource "azurerm_app_service_plan" "cs3-plan" {
+  name                = "x-p-9-01-apps-plan"
   location            = local.location_2
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   tags                = var.tags
@@ -27,11 +27,11 @@ resource "azurerm_app_service_plan" "group4-plan" {
 }
 
 # App Service 
-resource "azurerm_app_service" "group4-app" {
-  name                    = "group4-app"
-  location                = "Australia Central"
+resource "azurerm_app_service" "cs3-app" {
+  name                    = "x-p-9-01-app"
+  location                = local.location_2
   resource_group_name     = azurerm_resource_group.RG_Group4_week3_20220321.name
-  app_service_plan_id     = azurerm_app_service_plan.group4-plan.id
+  app_service_plan_id     = azurerm_app_service_plan.cs3-plan.id
   #https_only              = true
   #client_affinity_enabled = false
   tags                		= var.tags
@@ -45,8 +45,8 @@ resource "azurerm_app_service" "group4-app" {
 }
 
 # Azure MySQL 
-resource "azurerm_mysql_server" "group4-sql" {
- name                = "group4-mysqlserver"
+resource "azurerm_mysql_server" "cs3-sql" {
+ name                = "x-p-9-01-mysqlserver"
   location            = local.location_2
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
 
@@ -67,20 +67,20 @@ resource "azurerm_mysql_server" "group4-sql" {
 }
 
 # Azure Database
-resource "azurerm_mysql_database" "group4-db" {
-  name                = "group4-mysqldb"
+resource "azurerm_mysql_database" "cs3-db" {
+  name                = "x-p-9-01-mysqldb"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
-  server_name         = azurerm_mysql_server.group4-sql.name
+  server_name         = azurerm_mysql_server.cs3-sql.name
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
 }
 
 # Auto Scale
 resource "azurerm_monitor_autoscale_setting" "group4-autoscale" {
-  name                = "group4-autoscaleSetting"
+  name                = "x-p-9-01-autoscaleSetting"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   location            = azurerm_resource_group.RG_Group4_week3_20220321.location
-  target_resource_id  = azurerm_app_service_plan.group4-plan.id
+  target_resource_id  = azurerm_app_service_plan.cs3-plan.id
   profile {
     name = "default"
     capacity {
@@ -91,7 +91,7 @@ resource "azurerm_monitor_autoscale_setting" "group4-autoscale" {
     rule {
       metric_trigger {
         metric_name        = "CpuPercentage"
-        metric_resource_id = azurerm_app_service_plan.group4-plan.id
+        metric_resource_id = azurerm_app_service_plan.cs3-plan.id
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = "PT5M"
@@ -109,7 +109,7 @@ resource "azurerm_monitor_autoscale_setting" "group4-autoscale" {
     rule {
       metric_trigger {
         metric_name        = "CpuPercentage"
-        metric_resource_id = azurerm_app_service_plan.group4-plan.id
+        metric_resource_id = azurerm_app_service_plan.cs3-plan.id
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = "PT5M"
