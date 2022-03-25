@@ -1,9 +1,30 @@
-variable "location" {
+variable "rg-name" {
+  type = string
+  default = "RG_Group4_week3_20220321"
+}
+
+variable "RG-location" {
   type				= string
   description	= "Azure Region for resources. Defaults to Southeast Asia."
   default			= "Southeast Asia"
 }
 
+variable "serv-location" {
+  type = string
+  default = "Australia Central"
+}
+
+variable "primary_location" {
+  type        = string
+  description = "The primary region that the resources will be deployed into"
+  default = "West Europe"
+}
+
+variable "secondary_location" {
+  type        = string
+  description = "The primary region that the resources will be deployed into"
+  default = "North Europe"
+}
 
 variable "tags" {
   type    = map(string)
@@ -15,3 +36,7 @@ variable "tags" {
   }
 }
 
+variable "is_primary_deployment" {
+  type        = bool
+  description = "Indicates if this is the primary or secondary deployment"
+}
