@@ -56,7 +56,7 @@ resource "azurerm_mysql_server" "cs3-primary-sql" {
   administrator_login          = "group04"
   administrator_login_password = "Group@04"
 
-  sku_name   = "G_Gen5_1" #cheapest
+  sku_name   = "GP_Gen5_2" 
   storage_mb = 5120 #smallest
   version    = "5.7"
 
@@ -221,14 +221,14 @@ resource "azurerm_mysql_server" "cs3-second-sql" {
   administrator_login          = "group04"
   administrator_login_password = "Group@04"
 
-  sku_name   = "G_Gen5_1" #cheapest
+  sku_name   = "GP_Gen5_2" 
   storage_mb = 5120 #smallest
   version    = "5.7"
 
   auto_grow_enabled                 = false
   backup_retention_days             = 7
-  geo_redundant_backup_enabled      = false
-  infrastructure_encryption_enabled = false
+  geo_redundant_backup_enabled      = true
+  infrastructure_encryption_enabled = true
   public_network_access_enabled     = true
   ssl_enforcement_enabled           = false
   #ssl_minimal_tls_version_enforced  = "TLS1_2"
