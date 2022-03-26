@@ -35,13 +35,3 @@ variable "tags" {
     ModifyWith = "Terraform"
   }
 }
-
-variable "is_primary_deployment" {
-  type        = number
-  description = "Is this the primary deployment? (yes = 1, no = 0)"
-}
-
-# variable "one_two" {
-#     type = bool
-#     description = "This is for mysql database"
-# }

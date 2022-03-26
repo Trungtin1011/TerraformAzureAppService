@@ -8,13 +8,6 @@
 #
 ####################################
 
-locals {
-  primary = "${var.is_primary_deployment == 3 ? "primary" : "Nope" }"
-  secondary = "${var.is_primary_deployment == 3 ? "secondary" : "Nope" }"
-
-  dbb = "${var.is_primary_deployment == 3 ? "x-p-9-01-mysqlserver" : "x-p-9-02-mysqlserver"}"
-}
-
 # Resource Group
 resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
   name     = "RG_Group4_week3_20220321"
@@ -25,7 +18,6 @@ resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
 ################################ PRIMARY REGION - WEST EUROPE ################################
 # Primary App Service Plan
 resource "azurerm_app_service_plan" "cs3-primary-plan" {
-  #count  = local.primary == "primary" ? 1 : 0
   name                = "x-p-9-01-apps-plan"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -41,7 +33,6 @@ resource "azurerm_app_service_plan" "cs3-primary-plan" {
 
 # Primary App Service 
 resource "azurerm_app_service" "cs3-primary-app" {
-  #count  = local.primary == "primary" ? 1 : 0
   name                    = "x-p-9-01-app"
   location                = var.primary_location
   resource_group_name     = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -58,7 +49,6 @@ resource "azurerm_app_service" "cs3-primary-app" {
 
 # Primary Azure MySQL 
 resource "azurerm_mysql_server" "cs3-primary-sql" {
-  #count  = local.primary == "primary" ? 1 : 0
   name                = "x-p-9-01-mysqlserver"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -66,14 +56,14 @@ resource "azurerm_mysql_server" "cs3-primary-sql" {
   administrator_login          = "group04"
   administrator_login_password = "Group@04"
 
-  sku_name   = "B_Gen5_1" #cheapest
+  sku_name   = "G_Gen5_1" #cheapest
   storage_mb = 5120 #smallest
   version    = "5.7"
 
   auto_grow_enabled                 = false
   backup_retention_days             = 7
-  geo_redundant_backup_enabled      = false
-  infrastructure_encryption_enabled = false
+  geo_redundant_backup_enabled      = true
+  infrastructure_encryption_enabled = true
   public_network_access_enabled     = true
   ssl_enforcement_enabled           = false
   #ssl_minimal_tls_version_enforced  = "TLS1_2"
@@ -134,33 +124,65 @@ resource "azurerm_monitor_autoscale_setting" "cs3-primary-autoscale" {
 ##############################################################################################
 
 
+########################### AZURE DATABASE AND MYSQL FAILOVER GROUP ##########################
+
 # Azure Database
-resource "azurerm_mysql_database" "cs3-db" {
+resource "azurerm_mysql_database" "cs3-primary-db" {
   name                = "x-p-9-01-mysqldb"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
 
-  #server_name         = local.dbb
-  server_name = azurerm_app_service.cs3-primary-app.name
+  server_name         = azurerm_mysql_server.cs3-primary-sql.name
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
 }
 
-output "dbname" {
-  value = azurerm_mysql_database.cs3-db.server_name  
+resource "azurerm_mysql_database" "cs3-second-db" {
+  name                = "x-p-9-02-mysqldb"
+  resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
+
+  server_name         = azurerm_mysql_server.cs3-second-sql.name
+  charset             = "utf8"
+  collation           = "utf8_unicode_ci"
 }
 
-output "checkbool" {
-  value = "${local.primary}"
-}
+# # Failover group
+# resource "azurerm_sql_failover_group" "failgroup" {
+#   name                = "x-p-9-01-failover-group"
+#   resource_group_name = azurerm_mysql_server.cs3-primary-sql.resource_group_name
+#   server_name         = azurerm_mysql_server.cs3-primary-sql.name
+#   databases           = [azurerm_mysql_database.cs3-db.id]
+#   partner_servers {
+#     id = azurerm_mysql_server.cs3-second-sql.id
+#   }
 
-output "checkbool22" {
-  value = "${var.is_primary_deployment}"
-}
+#   read_write_endpoint_failover_policy {
+#     mode          = "Automatic"
+#     grace_minutes = 5
+#   }
+# }
+
+#For debugging
+# output "Is_This_Primary" {
+#   value = "${local.primary}"
+# }
+# output "checkbool22" {
+#   value = "${var.is_primary_deployment}"
+# }
+
+# Create application insights
+# resource "azurerm_application_insights" "app_insights" {
+#   resource_group_name = var.rg-name
+#   location            = var.RG-location
+#   name                = "x-p-9-01-app-insight"
+#   application_type    = "web"
+# }
+##############################################################################################
+
+
 
 ############################## SECONDARY REGION - NORTH EUROPE ##############################
 # Secondary App Service Plan
 resource "azurerm_app_service_plan" "cs3-second-plan" {
-  #count  = var.is_primary_deployment ? 1 : 0
   name                = "x-p-9-02-apps-plan"
   location            = var.secondary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -176,12 +198,11 @@ resource "azurerm_app_service_plan" "cs3-second-plan" {
 
 # Secondary App Service 
 resource "azurerm_app_service" "cs3-second-app" {
-  #count  = var.is_primary_deployment ? 1 : 0
   name                    = "x-p-9-02-app"
   location                = var.secondary_location
   resource_group_name     = azurerm_resource_group.RG_Group4_week3_20220321.name
-  app_service_plan_id     = azurerm_app_service_plan.cs3-second-plan.id
   tags                		= var.tags
+  app_service_plan_id = azurerm_app_service_plan.cs3-second-plan.id
 
   source_control {
     repo_url           = "https://github.com/WordPress/WordPress"
@@ -193,7 +214,6 @@ resource "azurerm_app_service" "cs3-second-app" {
 
 # Secondary Azure MySQL 
 resource "azurerm_mysql_server" "cs3-second-sql" {
-  #count  = var.is_primary_deployment ? 1 : 0
   name                = "x-p-9-02-mysqlserver"
   location            = var.secondary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -201,7 +221,7 @@ resource "azurerm_mysql_server" "cs3-second-sql" {
   administrator_login          = "group04"
   administrator_login_password = "Group@04"
 
-  sku_name   = "B_Gen5_1" #cheapest
+  sku_name   = "G_Gen5_1" #cheapest
   storage_mb = 5120 #smallest
   version    = "5.7"
 
@@ -216,7 +236,6 @@ resource "azurerm_mysql_server" "cs3-second-sql" {
 
 # Secondary Auto Scale
 resource "azurerm_monitor_autoscale_setting" "cs3-second-autoscale" {
-  #count  = var.is_primary_deployment ? 1 : 0
   name                = "x-p-9-02-autoscaleSetting"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   location            = var.secondary_location
@@ -273,9 +292,6 @@ resource "azurerm_traffic_manager_profile" "traffic_profile" {
   name                   = "x-p-9-01-traffic-profile"
   resource_group_name    = azurerm_resource_group.RG_Group4_week3_20220321.name
   traffic_routing_method = "Priority"
-  # depends_on = [
-  #   azurerm_app_service.cs3-primary-app
-  # ]
 
    dns_config {
     relative_name = "x-p-9-01-traffic-profile"
@@ -293,27 +309,19 @@ resource "azurerm_traffic_manager_profile" "traffic_profile" {
   }
 
 resource "azurerm_traffic_manager_azure_endpoint" "primary_endpoint" {
-  #count  = local.primary == "primary" ? 1 : 0
   name               = "x-p-9-01-endpoint"
   profile_id         = azurerm_traffic_manager_profile.traffic_profile.id
   priority           = 1
   weight             = 100
   target_resource_id = azurerm_app_service.cs3-primary-app.id
-  # depends_on = [
-  #   azurerm_traffic_manager_profile.traffic_profile
-  # ]
 }
 
 resource "azurerm_traffic_manager_azure_endpoint" "secondary_endpoint" {
-  #count  = var.is_primary_deployment ? 1 : 0
   name               = "x-p-9-02-endpoint"
   profile_id         = azurerm_traffic_manager_profile.traffic_profile.id
   priority           = 2
   weight             = 100
   target_resource_id = azurerm_app_service.cs3-second-app.id 
-  # depends_on = [
-  #   azurerm_app_service.cs3-second-app
-  # ]
 }
 
 #############################################################################################
