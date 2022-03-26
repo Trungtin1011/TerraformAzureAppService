@@ -26,7 +26,7 @@ steps:
 - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
   displayName: 'Terraform : PLAN'
   inputs:
-    command: plan
+    command: plan -lock=false
     environmentServiceNameAzureRM: 'LBN Azure Lab (54d87296-b91a-47cd-93dd-955bd57b3e9a)'
 
 - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
