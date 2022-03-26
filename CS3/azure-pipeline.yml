@@ -1,0 +1,36 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  name: Azure Pipelines
+  vmImage: ubuntu-latest
+
+steps:
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+  displayName: 'Install Terraform latest'
+
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+  displayName: 'Terraform : INIT'
+  inputs:
+    backendServiceArm: 'LBN Azure Lab (54d87296-b91a-47cd-93dd-955bd57b3e9a)'
+    backendAzureRmResourceGroupName: 'RG_Group4_week3_20220321'
+    backendAzureRmStorageAccountName: tfsaving
+    backendAzureRmContainerName: tfstate
+    backendAzureRmKey: 'WOvXumt8tGxwUHztaqtibcPzempbfyN1Q2aUzY4tMliMQBWQEMtpQLySJK/9016wICjra3l6lClQ911g2gBETg=='
+
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+  displayName: 'Terraform : PLAN'
+  inputs:
+    command: plan
+    environmentServiceNameAzureRM: 'LBN Azure Lab (54d87296-b91a-47cd-93dd-955bd57b3e9a)'
+
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+  displayName: 'Terraform : VALID & APPLY'
+  inputs:
+    command: apply
+    environmentServiceNameAzureRM: 'LBN Azure Lab (54d87296-b91a-47cd-93dd-955bd57b3e9a)'
