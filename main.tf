@@ -5,9 +5,9 @@ resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
   tags = var.tags
 }
 
-################################ PRIMARY REGION - WEST EUROPE ################################
+################################ WEST EUROPE ################################
 # Primary App Service Plan
-resource "azurerm_app_service_plan" "cs3-plan" {
+resource "azurerm_app_service_plan" "cs3-plans" {
   name                = "gr4-x-p-9-apps-plan"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -23,11 +23,11 @@ resource "azurerm_app_service_plan" "cs3-plan" {
 }
 
 # Primary App Service 
-resource "azurerm_app_service" "cs3-app" {
+resource "azurerm_app_service" "cs3-apps" {
   name                    = "gr4-x-p-9-app"
   location                = var.primary_location
   resource_group_name     = azurerm_resource_group.RG_Group4_week3_20220321.name
-  app_service_plan_id     = azurerm_app_service_plan.cs3-plan.id
+  app_service_plan_id     = azurerm_app_service_plan.cs3-plans.id
   tags                		= var.tags
 
   source_control {
@@ -39,7 +39,7 @@ resource "azurerm_app_service" "cs3-app" {
 }
 
 # Primary Azure MySQL 
-resource "azurerm_mysql_server" "cs3-primary-sql" {
+resource "azurerm_mysql_server" "cs3-sql" {
   name                = "gr4-x-p-9-mysqlserver"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -61,12 +61,22 @@ resource "azurerm_mysql_server" "cs3-primary-sql" {
 
 }
 
+# Azure Database
+resource "azurerm_mysql_database" "cs3-primary-db" {
+  name                = "gr4-x-p-9-mysqldb"
+  resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
+
+  server_name         = azurerm_mysql_server.cs3-sql.name
+  charset             = "utf8"
+  collation           = "utf8_unicode_ci"
+}
+
 # Primary Auto Scale
-resource "azurerm_monitor_autoscale_setting" "cs3-primary-autoscale" {
+resource "azurerm_monitor_autoscale_setting" "cs3-autoscale" {
   name                = "gr4-x-p-9-autoscaleSetting"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   location            = var.primary_location
-  target_resource_id  = azurerm_app_service_plan.cs3-plan.id
+  target_resource_id  = azurerm_app_service_plan.cs3-plans.id
 
   profile {
     name = "default"
@@ -78,7 +88,7 @@ resource "azurerm_monitor_autoscale_setting" "cs3-primary-autoscale" {
     rule {
       metric_trigger {
         metric_name        = "CpuPercentage"
-        metric_resource_id = azurerm_app_service_plan.cs3-plan.id
+        metric_resource_id = azurerm_app_service_plan.cs3-plans.id
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = "PT5M"
@@ -96,7 +106,7 @@ resource "azurerm_monitor_autoscale_setting" "cs3-primary-autoscale" {
     rule {
       metric_trigger {
         metric_name        = "CpuPercentage"
-        metric_resource_id = azurerm_app_service_plan.cs3-plan.id
+        metric_resource_id = azurerm_app_service_plan.cs3-plans.id
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = "PT5M"
@@ -114,20 +124,3 @@ resource "azurerm_monitor_autoscale_setting" "cs3-primary-autoscale" {
   }  
 }
 ##############################################################################################
-
-
-########################### AZURE DATABASE ##########################
-
-# Azure Database
-resource "azurerm_mysql_database" "cs3-primary-db" {
-  name                = "gr4-x-p-9-mysqldb"
-  resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
-
-  server_name         = azurerm_mysql_server.cs3-primary-sql.name
-  charset             = "utf8"
-  collation           = "utf8_unicode_ci"
-}
-
-##############################################################################################
-
-
