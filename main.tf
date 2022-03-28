@@ -1,13 +1,3 @@
-###### IS PRIMARY DEPLOYMENT? ######
-#
-#     If true => 1
-#
-#     If false => 0
-#
-#    =>>>>>>> is_primary_deployment ? 1 : 0
-#
-####################################
-
 # Resource Group
 resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
   name     = "RG_Group4_week3_20220321"
@@ -24,10 +14,11 @@ resource "azurerm_app_service_plan" "cs3-primary-plan" {
   tags                = var.tags
   kind                = "Linux"
   reserved            = true # must be true for Linux
+  zone_redundant      = true
 
   sku {
-    tier = "Standard"
-    size = "S1"
+    tier = "Premium"
+    size = "P1V2"
   }
 }
 
@@ -40,7 +31,7 @@ resource "azurerm_app_service" "cs3-primary-app" {
   tags                		= var.tags
 
   source_control {
-    repo_url           = "https://github.com/WordPress/WordPress"
+    repo_url           = "https://github.com/Trungtin1011/WP"
     branch             = "master"
     manual_integration = true
     use_mercurial      = false
@@ -145,39 +136,8 @@ resource "azurerm_mysql_database" "cs3-second-db" {
   collation           = "utf8_unicode_ci"
 }
 
-# # Failover group
-# resource "azurerm_sql_failover_group" "failgroup" {
-#   name                = "x-p-9-01-failover-group"
-#   resource_group_name = azurerm_mysql_server.cs3-primary-sql.resource_group_name
-#   server_name         = azurerm_mysql_server.cs3-primary-sql.name
-#   databases           = [azurerm_mysql_database.cs3-db.id]
-#   partner_servers {
-#     id = azurerm_mysql_server.cs3-second-sql.id
-#   }
 
-#   read_write_endpoint_failover_policy {
-#     mode          = "Automatic"
-#     grace_minutes = 5
-#   }
-# }
-
-#For debugging
-# output "Is_This_Primary" {
-#   value = "${local.primary}"
-# }
-# output "checkbool22" {
-#   value = "${var.is_primary_deployment}"
-# }
-
-# Create application insights
-# resource "azurerm_application_insights" "app_insights" {
-#   resource_group_name = var.rg-name
-#   location            = var.RG-location
-#   name                = "x-p-9-01-app-insight"
-#   application_type    = "web"
-# }
 ##############################################################################################
-
 
 
 ############################## SECONDARY REGION - NORTH EUROPE ##############################
@@ -189,10 +149,11 @@ resource "azurerm_app_service_plan" "cs3-second-plan" {
   tags                = var.tags
   kind                = "Linux"
   reserved            = true # must be true for Linux
+  zone_redundant = true
 
   sku {
-    tier = "Standard"
-    size = "S1"
+    tier = "Premium"
+    size = "P1V2"
   }
 }
 
@@ -205,7 +166,7 @@ resource "azurerm_app_service" "cs3-second-app" {
   app_service_plan_id = azurerm_app_service_plan.cs3-second-plan.id
 
   source_control {
-    repo_url           = "https://github.com/WordPress/WordPress"
+    repo_url           = "https://github.com/Trungtin1011/WP"
     branch             = "master"
     manual_integration = true
     use_mercurial      = false

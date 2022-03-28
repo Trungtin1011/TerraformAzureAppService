@@ -1,0 +1,31 @@
+# # Failover group
+# resource "azurerm_sql_failover_group" "failgroup" {
+#   name                = "x-p-9-01-failover-group"
+#   resource_group_name = azurerm_mysql_server.cs3-primary-sql.resource_group_name
+#   server_name         = azurerm_mysql_server.cs3-primary-sql.name
+#   databases           = [azurerm_mysql_database.cs3-db.id]
+#   partner_servers {
+#     id = azurerm_mysql_server.cs3-second-sql.id
+#   }
+
+#   read_write_endpoint_failover_policy {
+#     mode          = "Automatic"
+#     grace_minutes = 5
+#   }
+# }
+
+#For debugging
+# output "Is_This_Primary" {
+#   value = "${local.primary}"
+# }
+# output "checkbool22" {
+#   value = "${var.is_primary_deployment}"
+# }
+
+# Create application insights
+# resource "azurerm_application_insights" "app_insights" {
+#   resource_group_name = var.rg-name
+#   location            = var.RG-location
+#   name                = "x-p-9-01-app-insight"
+#   application_type    = "web"
+# }
