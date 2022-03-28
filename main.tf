@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
 ################################ WEST EUROPE ################################
 # Primary App Service Plan
 resource "azurerm_app_service_plan" "cs3-plans" {
-  name                = "gr4-x-p-9-apps-plan"
+  name                = "gr4-x-p-9-01-apps-plan"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
   tags                = var.tags
@@ -24,7 +24,7 @@ resource "azurerm_app_service_plan" "cs3-plans" {
 
 # Primary App Service 
 resource "azurerm_app_service" "cs3-apps" {
-  name                    = "gr4-x-p-9-app"
+  name                    = "gr4-x-p-9-01-app"
   location                = var.primary_location
   resource_group_name     = azurerm_resource_group.RG_Group4_week3_20220321.name
   app_service_plan_id     = azurerm_app_service_plan.cs3-plans.id
@@ -40,7 +40,7 @@ resource "azurerm_app_service" "cs3-apps" {
 
 # Primary Azure MySQL 
 resource "azurerm_mysql_server" "cs3-sql" {
-  name                = "gr4-x-p-9-mysqlserver"
+  name                = "gr4-x-p-9-01-mysqlserver"
   location            = var.primary_location
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
 
@@ -63,7 +63,7 @@ resource "azurerm_mysql_server" "cs3-sql" {
 
 # Azure Database
 resource "azurerm_mysql_database" "cs3-primary-db" {
-  name                = "gr4-x-p-9-mysqldb"
+  name                = "gr4-x-p-9-01-mysqldb"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
 
   server_name         = azurerm_mysql_server.cs3-sql.name
