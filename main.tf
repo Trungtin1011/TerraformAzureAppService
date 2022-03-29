@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "RG_Group4_week3_20220321" {
 }
 
 ################################ WEST EUROPE ################################
-# Primary App Service Plan
+# App Service Plan
 resource "azurerm_app_service_plan" "cs3-plans" {
   name                = "gr4-x-p-9-01-apps-plan"
   location            = var.primary_location
@@ -22,7 +22,7 @@ resource "azurerm_app_service_plan" "cs3-plans" {
   }
 }
 
-# Primary App Service 
+# App Service 
 resource "azurerm_app_service" "cs3-apps" {
   name                    = "gr4-x-p-9-01-app"
   location                = var.primary_location
@@ -38,7 +38,7 @@ resource "azurerm_app_service" "cs3-apps" {
   }
 }
 
-# Primary Azure MySQL 
+# Azure MySQL 
 resource "azurerm_mysql_server" "cs3-sql" {
   name                = "gr4-x-p-9-01-mysqlserver"
   location            = var.primary_location
@@ -71,7 +71,7 @@ resource "azurerm_mysql_database" "cs3-primary-db" {
   collation           = "utf8_unicode_ci"
 }
 
-# Primary Auto Scale
+# Auto Scale
 resource "azurerm_monitor_autoscale_setting" "cs3-autoscale" {
   name                = "gr4-x-p-9-autoscaleSetting"
   resource_group_name = azurerm_resource_group.RG_Group4_week3_20220321.name
@@ -123,4 +123,4 @@ resource "azurerm_monitor_autoscale_setting" "cs3-autoscale" {
     }
   }  
 }
-##############################################################################################
+##############################################################################
