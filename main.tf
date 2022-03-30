@@ -31,7 +31,7 @@ resource "azurerm_app_service" "cs3-apps" {
   tags                		= var.tags
 
   source_control {
-    repo_url           = "https://github.com/Trungtin1011/WordPress"
+    repo_url           = "https://github.com/Trungtin1011/WP"
     branch             = "master"
     manual_integration = true
     use_mercurial      = false
